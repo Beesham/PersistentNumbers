@@ -20,8 +20,8 @@
 #define SIZE_OF_ARRAY 10
 
 bool argumentCheck(); //check if any args were provided
-bool readFile(); //reads the file for list of numbers
-void sort(); //sorts the input 
+bool readFile(int *array, char *file[]); //reads the file for list of numbers
+void sort(int *arr, int a, int b); //sorts the input 
 void calculatePersitent(); //calculates the persistency of the number
 
 
@@ -30,6 +30,47 @@ int main(int argc, char *argv[]) {
     
     if (!argumentCheck(argc) || !readFile(numbers, argv)) exit(0);
     
+    for(int i=0;i<10;i++) printf("%d\n", numbers[i]); 
+    
+    sort(numbers, 0, 9);
+    printf("\n");
+    for(int i=0;i<10;i++) printf("%d\n", numbers[i]); 
+}
+
+void swap(int *array, int indexK, int indexJ) {
+    int temp = array[indexK];
+	array[indexK] = array[indexJ];
+    array[indexJ] = temp;
+}
+
+/*
+* Quicksort
+*/
+void sort(int *arr, int a, int b) {
+    if(a >= b) {
+        printf("Base case reached, returning\n");
+        return;
+    }
+    int pivot = arr[b];
+    int l = a;
+    int r = b - 1;
+
+    while(l <= r) {
+        while(l <= r && arr[l] <= pivot) {
+            l = l + 1;
+        }
+
+        while(l <= r && arr[l] >= pivot) {
+            r = r - 1;
+        }
+
+        if(l < r){
+            swap(arr, l, r);
+        }
+    }
+    swap(arr, l, b);
+    sort(arr, a, l - 1);
+    sort(arr, l + 1, b);
 }
 
 bool readFile(int *array, char *file[]) {
