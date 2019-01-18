@@ -16,20 +16,80 @@
 #include <sys/types.h>
 #include <stdbool.h>
 #include <fcntl.h>
+#include <limits.h>
 
 #define SIZE_OF_ARRAY 10
 
 bool argumentCheck(); //check if any args were provided
 bool readFile(); //reads the file for list of numbers
 void sort(); //sorts the input 
-void calculatePersitent(); //calculates the persistency of the number
-
+void getPersistent(int *array); //calculates the persistency of the number
 
 int main(int argc, char *argv[]) {  
     int numbers[SIZE_OF_ARRAY];   //array to hold the list of numbers
     
     if (!argumentCheck(argc) || !readFile(numbers, argv)) exit(0);
+    getPersistent(numbers);    
+}
+
+
+int calculatePersistent(int a) {
+    int newNum = 1;
+    int persistency = 0;
+    int number = a;    
+
+    //calculates the persistency of the number
+    while (number % 10 != number) { //exit loop if single digit, e.g 8%10=8
+        int tempNum = number;
+        int factor = 1;
+        int digit = 0;
+        
+        //finds the significance of the number, e.g 10, 100, 1000
+        while (tempNum) {
+            tempNum = tempNum/10;
+            factor = factor*10;
+        }
+        
+        tempNum = number;
+        
+        //finds the digit by significance and multiplies it with the previous gidit
+        while (factor > 1) {
+            factor = factor/10;
+            digit = tempNum/factor;
+            newNum = newNum*digit;
+            tempNum = tempNum%factor;
+        }
+        persistency++;
+        number = newNum;
+        newNum = 1;
+        factor = 1;
+        digit = 0;
+    }   
+
+    printf("Persistency of %d is %d\n", a, persistency);
+    return persistency;
+}
+
+void getPersistent(int *array){
+    int maxPersistentNumber = 0;
+    int minPersistentNumber = maxPersistentNumber;
+    int maxPersistent = 0;
+    int minPersistent = INT_MAX;
     
+    //loops through list and finds the max and min persistent numbers
+    for (int i=0; i<sizeof(array); i++) {
+        int p = calculatePersistent(array[i]);
+        if (p >= maxPersistent) { 
+            maxPersistentNumber = array[i];
+            maxPersistent = p;
+        } else if (p <= minPersistent) {
+            minPersistentNumber = array[i];
+            minPersistent = p;
+        }
+    }
+
+    printf("MaxP num: %d", maxPersistentNumber);
+    printf("MinP num: %d", minPersistentNumber);
 }
 
 bool readFile(int *array, char *file[]) {
