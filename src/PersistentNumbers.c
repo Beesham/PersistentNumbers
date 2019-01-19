@@ -27,7 +27,7 @@ void getPersistent(int *array); //calculates the persistency of the number
 
 int main(int argc, char *argv[]) {  
     int numbers[SIZE_OF_ARRAY];   //array to hold the list of numbers
-    
+ 
     if (!argumentCheck(argc) || !readFile(numbers, argv)) exit(0);
     getPersistent(numbers);    
 }
@@ -72,17 +72,19 @@ int calculatePersistent(int a) {
 
 void getPersistent(int *array){
     int maxPersistentNumber = 0;
-    int minPersistentNumber = maxPersistentNumber;
-    int maxPersistent = 0;
+    int minPersistentNumber = 0;
+    int maxPersistent = INT_MIN;
     int minPersistent = INT_MAX;
     
     //loops through list and finds the max and min persistent numbers
-    for (int i=0; i<sizeof(array); i++) {
+    for (int i=0; i<SIZE_OF_ARRAY; i++) {
         int p = calculatePersistent(array[i]);
         if (p >= maxPersistent) { 
             maxPersistentNumber = array[i];
             maxPersistent = p;
-        } else if (p <= minPersistent) {
+        }
+        
+        if (p <= minPersistent) {
             minPersistentNumber = array[i];
             minPersistent = p;
         }
@@ -103,8 +105,8 @@ bool readFile(int *array, char *file[]) {
     
     //Reads the numbers into the array
     int n=0;
-    while(fscanf(fp, "%d", &array[n]) != EOF) n++;
-        
+    while(fscanf(fp, "%d", &array[n]) == 1) n++;
+    fclose(fp);
     return true;
 }
 
