@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 
     //do child stuff
     if (pid == 0) {
-        printf("I am kid #: %d\n", childCount);
+        printf("I am kid #: %d with pid: %d\n", childCount, getpid());
     }
     return 0;
 }
