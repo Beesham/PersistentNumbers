@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <time.h>
 
 #define SIZE_OF_ARRAY 10
 
@@ -28,14 +29,19 @@ void sort(int *arr, int a, int b); //sorts the input
 int main(int argc, char *argv[]) {  
     int numbers[SIZE_OF_ARRAY];   //array to hold the list of numbers
  
+    double executionTime = 0;
+    clock_t startTime = clock();
+    
     if (!argumentCheck(argc) || !readFile(numbers, argv)) exit(0);
-    for(int i=0;i<10;i++) printf("%d\n", numbers[i]); 
-    
     sort(numbers, 0, 9);
-    printf("\n");
-    for(int i=0;i<10;i++) printf("%d\n", numbers[i]); 
-    
     getPersistent(numbers);    
+
+    clock_t endTime = clock();
+    executionTime += (double)(endTime - startTime) / CLOCKS_PER_SEC;
+
+    printf("Execution time: %f seconds", executionTime);
+
+    return 0;
 }
 
 /*
