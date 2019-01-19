@@ -48,7 +48,6 @@ void swap(int *array, int indexK, int indexJ) {
 */
 void sort(int *arr, int a, int b) {
     if(a >= b) {
-        printf("Base case reached, returning\n");
         return;
     }
     int pivot = arr[b];
@@ -56,21 +55,23 @@ void sort(int *arr, int a, int b) {
     int r = b - 1;
 
     while(l <= r) {
-        while(l <= r && arr[l] <= pivot) {
+        while(arr[l] < pivot) {
             l = l + 1;
         }
 
-        while(l <= r && arr[l] >= pivot) {
+        while(arr[r] > pivot) {
             r = r - 1;
         }
 
-        if(l < r){
+        if(l <= r){
             swap(arr, l, r);
+            l = l + 1;
+            r = r - 1; 
         }
     }
     swap(arr, l, b);
-    sort(arr, a, l - 1);
-    sort(arr, l + 1, b);
+    sort(arr, a, r);
+    sort(arr, l, b);
 }
 
 bool readFile(int *array, char *file[]) {
