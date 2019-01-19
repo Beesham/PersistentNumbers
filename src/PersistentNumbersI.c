@@ -19,7 +19,7 @@
 #include <limits.h>
 #include <time.h>
 
-#define SIZE_OF_ARRAY 10
+#define SIZE_OF_ARRAY 125
 
 bool argumentCheck(); //check if any args were provided
 void getPersistent(int *array); //calculates the persistency of the number
@@ -32,7 +32,11 @@ int main(int argc, char *argv[]) {
     double executionTime = 0;
     clock_t startTime = clock();
     
-    if (!argumentCheck(argc) || !readFile(numbers, argv)) exit(0);
+    if (!argumentCheck(argc) || !readFile(numbers, argv)) {
+        clock();        
+        exit(0);
+    }
+    
     sort(numbers, 0, 9);
     getPersistent(numbers);    
 
@@ -80,7 +84,6 @@ int calculatePersistent(int a) {
         digit = 0;
     }   
 
-    printf("Persistency of %d is %d\n", a, persistency);
     return persistency;
 }
 
