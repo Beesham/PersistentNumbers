@@ -32,7 +32,9 @@ int main(int argc, char *argv[]) {
     getPersistent(numbers);    
 }
 
-
+/*
+* Calculates the persistence of an integer number
+*/
 int calculatePersistent(int a) {
     int newNum = 1;
     int persistency = 0;
@@ -90,8 +92,8 @@ void getPersistent(int *array){
         }
     }
 
-    printf("MaxP num: %d", maxPersistentNumber);
-    printf("MinP num: %d", minPersistentNumber);
+    printf("Max Persitence number: %d with %d persistence\n", maxPersistentNumber, maxPersistent);
+    printf("Min Persitence number: %d with %d persistence\n", minPersistentNumber, minPersistent);
 }
 
 bool readFile(int *array, char *file[]) {
