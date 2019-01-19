@@ -21,14 +21,20 @@
 #define SIZE_OF_ARRAY 10
 
 bool argumentCheck(); //check if any args were provided
-bool readFile(); //reads the file for list of numbers
-void sort(); //sorts the input 
 void getPersistent(int *array); //calculates the persistency of the number
+bool readFile(int *array, char *file[]); //reads the file for list of numbers
+void sort(int *arr, int a, int b); //sorts the input 
 
 int main(int argc, char *argv[]) {  
     int numbers[SIZE_OF_ARRAY];   //array to hold the list of numbers
  
     if (!argumentCheck(argc) || !readFile(numbers, argv)) exit(0);
+    for(int i=0;i<10;i++) printf("%d\n", numbers[i]); 
+    
+    sort(numbers, 0, 9);
+    printf("\n");
+    for(int i=0;i<10;i++) printf("%d\n", numbers[i]); 
+    
     getPersistent(numbers);    
 }
 
@@ -94,6 +100,43 @@ void getPersistent(int *array){
 
     printf("Max Persitence number: %d with %d persistence\n", maxPersistentNumber, maxPersistent);
     printf("Min Persitence number: %d with %d persistence\n", minPersistentNumber, minPersistent);
+}
+
+void swap(int *array, int indexK, int indexJ) {
+    int temp = array[indexK];
+	array[indexK] = array[indexJ];
+    array[indexJ] = temp;
+}
+
+/*
+* Quicksort
+*/
+void sort(int *arr, int a, int b) {
+    if(a >= b) {
+        return;
+    }
+    int pivot = arr[b];
+    int l = a;
+    int r = b - 1;
+
+    while(l <= r) {
+        while(arr[l] < pivot) {
+            l = l + 1;
+        }
+
+        while(arr[r] > pivot) {
+            r = r - 1;
+        }
+
+        if(l <= r){
+            swap(arr, l, r);
+            l = l + 1;
+            r = r - 1; 
+        }
+    }
+    swap(arr, l, b);
+    sort(arr, a, r);
+    sort(arr, l, b);
 }
 
 bool readFile(int *array, char *file[]) {
