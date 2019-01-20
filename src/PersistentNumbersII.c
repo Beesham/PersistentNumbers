@@ -61,7 +61,9 @@ int main(int argc, char *argv[]) {
     if (pid > 0) {    
         printf("I am the father of the following: "); 
         for (int i = 0; i < MAX_CHILD_PROCESSES; i++) {
-            printf("%d, ", childProcesses[i]);
+            if(i == MAX_CHILD_PROCESSES - 1) {
+                printf("and %d", childProcesses[i]);
+            } else printf("%d, ", childProcesses[i]);
         }
         printf("\n");
     }
