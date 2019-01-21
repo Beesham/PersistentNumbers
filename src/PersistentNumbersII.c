@@ -43,9 +43,6 @@ int main(int argc, char *argv[]) {
     int childCount = 0;
     int pid;    
 
-    //registers the signal handler for the parent process        
-    signal(SIGUSR2, signalHandlerParent);
-
     double executionTime = 0;
     clock_t startTime = clock();
     
@@ -79,14 +76,20 @@ int main(int argc, char *argv[]) {
         }
         printf("\n");
 
-        while(FLAG_CONT == 0) {
-            sleep(1);
-            if(childPids[0] != '\0') {
-                kill(childPids[0], SIGUSR1);
-            } else {
-                FLAG_CONT = 1;
-            }
-        }       
+        //Un-pauses the child precesses      
+        for(int i = 0;i < 5; i++) {
+            kill(childPids[i], SIGUSR1);
+        }
+
+        int child_pid;
+        int status;
+        int n = MAX_CHILD_PROCESSES;
+        //waits for the children to finish
+        while(n > 0) {
+            child_pid = wait(&status);
+            printf("Child %d finished with status %d\n", child_pid, status);
+            --n;
+        }
 
     }
 
@@ -95,9 +98,8 @@ int main(int argc, char *argv[]) {
         signal(SIGUSR1, signalHandlerChild);
         pause();
         printf("I am kid #: %d with pid: %d\n", childCount, getpid());
-        kill(getppid(), SIGUSR2);
+        exit(1);
     }
-    return 0;
 }
 
 int spawnChild(int *childCount) {
@@ -238,18 +240,4 @@ bool argumentCheck(int argc) {
     Handles the signals for the IPC 
 */
 void signalHandlerChild(int signo) {
-}
-
-/*
-    Habdles the sidnals for parent proc
-*/
-void signalHandlerParent(int signo) {
-    sleep(1);
-    //Queue data structure     
-    int sizeOfArr = sizeof(childPids) / sizeof(int);
-    for(int i = 0; i < sizeOfArr; i++) {
-        childPids[i] = childPids[i+1];   
-    }
-    childPids[sizeOfArr] = '\0';
-    printf("processing...\n");
 }
