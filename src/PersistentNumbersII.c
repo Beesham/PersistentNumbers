@@ -19,6 +19,8 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <time.h>
+#include <signal.h>
+#include<sys/wait.h>
 
 #define SIZE_OF_ARRAY 125
 #define MAX_CHILD_PROCESSES 5
@@ -28,12 +30,21 @@ void getPersistent(int *array); //calculates the persistency of the number
 bool readFile(int *array, char *file[]); //reads the file for list of numbers
 void sort(int *arr, int a, int b); //sorts the input 
 int spawnChild(); //spawns a child process 
+void signalHandlerChild(int signo);//Signal Handler for child processes
+void signalHandlerParent(int signo);//Signal handler for parent proecess
+
+//List of child pids the parent keeps as a queue
+int childPids[MAX_CHILD_PROCESSES];
+int FLAG_CONT = 0; //flag to notify weather or not to keep sending kills
 
 int main(int argc, char *argv[]) {  
     int numbers[SIZE_OF_ARRAY];   //array to hold the list of numbers
     int childProcesses[MAX_CHILD_PROCESSES]; //array to hold child id 
     int childCount = 0;
     int pid;    
+
+    //registers the signal handler for the parent process        
+    signal(SIGUSR2, signalHandlerParent);
 
     double executionTime = 0;
     clock_t startTime = clock();
@@ -54,6 +65,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < MAX_CHILD_PROCESSES; i++) {
         if((pid = spawnChild(&childCount)) != 0) {
             childProcesses[i] = pid;
+            childPids[i] = pid;
         } else break;
     }
     
@@ -66,11 +78,24 @@ int main(int argc, char *argv[]) {
             } else printf("%d, ", childProcesses[i]);
         }
         printf("\n");
+
+        while(FLAG_CONT == 0) {
+            sleep(1);
+            if(childPids[0] != '\0') {
+                kill(childPids[0], SIGUSR1);
+            } else {
+                FLAG_CONT = 1;
+            }
+        }       
+
     }
 
     //do child stuff
     if (pid == 0) {
+        signal(SIGUSR1, signalHandlerChild);
+        pause();
         printf("I am kid #: %d with pid: %d\n", childCount, getpid());
+        kill(getppid(), SIGUSR2);
     }
     return 0;
 }
@@ -209,4 +234,22 @@ bool argumentCheck(int argc) {
     return true;
 }
 
+/*
+    Handles the signals for the IPC 
+*/
+void signalHandlerChild(int signo) {
+}
 
+/*
+    Habdles the sidnals for parent proc
+*/
+void signalHandlerParent(int signo) {
+    sleep(1);
+    //Queue data structure     
+    int sizeOfArr = sizeof(childPids) / sizeof(int);
+    for(int i = 0; i < sizeOfArr; i++) {
+        childPids[i] = childPids[i+1];   
+    }
+    childPids[sizeOfArr] = '\0';
+    printf("processing...\n");
+}
