@@ -63,12 +63,6 @@ int main(int argc, char *argv[]) {
     }
     
     sort(numbers, 0, 9);
-//    getPersistent(numbers);    
-
-    clock_t endTime = clock();
-    executionTime += (double)(endTime - startTime) / CLOCKS_PER_SEC;
-
-    printf("Execution time: %f seconds\n", executionTime);
 
     int fd[2];
     //create pipe
@@ -116,6 +110,11 @@ int main(int argc, char *argv[]) {
             printf("Child %d finished with status %d\n", child_pid, status);
             --n;
         }
+
+        clock_t endTime = clock();
+        executionTime += (double)(endTime - startTime) / CLOCKS_PER_SEC;
+
+        printf("Execution time: %f seconds\n", executionTime);
 
     }
 
