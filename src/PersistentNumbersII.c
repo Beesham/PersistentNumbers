@@ -38,13 +38,13 @@ void sort(int *arr, int a, int b); //sorts the input
 int spawnChild(); //spawns a child process 
 void signalHandlerChild(int signo); //Signal Handler for child processes
 void doChildWork(); //child process calculates persistence of numbers
-struct WorkPortion getWorkPortion(); //randomly selects a range of lines to process
+void createPipe(); //creates the pipe needed to communicate with the child processes
 
 //List of child pids the parent keeps as a queue
 int childPids[MAX_CHILD_PROCESSES];
 int FLAG_CONT = 0; //flag to notify weather or not to keep sending kills
-int numbers[SIZE_OF_ARRAY];   //array to hold the list of numbers
-
+int numbers[SIZE_OF_ARRAY]; //array to hold the list of numbers
+int fd[2]; //pipe file descriptors
 
 int main(int argc, char *argv[]) {  
     int childProcesses[MAX_CHILD_PROCESSES]; //array to hold child id 
@@ -64,12 +64,8 @@ int main(int argc, char *argv[]) {
     
     sort(numbers, 0, 9);
 
-    int fd[2];
     //create pipe
-    if(pipe(fd) == -1) {
-        printf("Error: Failed to create pipe");
-        exit(1);
-    }
+    createPipe();
 
     //created child processes
     for (int i = 0; i < MAX_CHILD_PROCESSES; i++) {
@@ -130,6 +126,13 @@ int main(int argc, char *argv[]) {
         printf("pid: %d starting at: %d\n", getpid(), wp.start);
         printf("pid: %d ending at: %d\n", getpid(), wp.end);
         doChildWork(wp);
+        exit(1);
+    }
+}
+
+void createPipe() {
+    if(pipe(fd) == -1) {
+        printf("Error: Failed to create pipe");
         exit(1);
     }
 }
