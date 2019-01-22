@@ -43,6 +43,8 @@ void signalHandlerChild(int signo); //Signal Handler for child processes
 void doChildWork(); //child process calculates persistence of numbers
 void createPipe(); //creates the pipe needed to communicate with the child processes
 void createChildProcesses(int *pid, int *childCount); //creates multiple child processes
+void printParentMessage();
+void assignWorkPortion(); //write a portion of work to the pipe
 
 int childPids[MAX_CHILD_PROCESSES]; //List of child pids the parent keeps as a queue
 int FLAG_CONT = 0; //flag to notify weather or not to keep sending kills to unpause child
@@ -52,7 +54,6 @@ int fd[2]; //pipe file descriptors
 int main(int argc, char *argv[]) {  
     int childCount = 0;
     int pid;    
-    int portions[5][2] = {{0,24},{25,49},{50,74},{75,99},{100,124}}; //1/5th of file being processes. i.e MAX_ARRAY_SIZE
     double executionTime = 0;
     clock_t startTime = clock();
     
@@ -64,28 +65,14 @@ int main(int argc, char *argv[]) {
     
     sort(numbers, 0, SIZE_OF_ARRAY - 1);
     createPipe();
-
-    //created child processes
     createChildProcesses(&pid, &childCount);
 
     //do parent stuff
     if (pid > 0) {    
         close(fd[0]); //close read 
-        
-        printf("I am the father of the following: "); 
-        for (int i = 0; i < MAX_CHILD_PROCESSES; i++) {
-            if(i == MAX_CHILD_PROCESSES - 1) {
-                printf("and %d", childPids[i]);
-            } else printf("%d, ", childPids[i]);
-            
-            //write a portion of work to the pipe to be read by a process
-            //whichever process reads it first
-            struct WorkPortion a;
-            a.start = *portions[i];
-            a.end = portions[i][1];
-            write(fd[1], &a, sizeof(struct WorkPortion));
-        }
-        printf("\n");
+
+        printParentMessage();
+        assignWorkPortion();
 
         //Un-pauses the child precesses      
         for(int i = 0;i < 5; i++) {
@@ -126,6 +113,29 @@ int main(int argc, char *argv[]) {
         
         exit(1);
     }
+}
+
+void assignWorkPortion() {
+    int portions[5][2] = {{0,24},{25,49},{50,74},{75,99},{100,124}}; //1/5th of file being processes. i.e MAX_ARRAY_SIZE
+    //write a portion of work to the pipe to be read by a process
+    //whichever process reads it first
+    for (int i = 0; i < MAX_CHILD_PROCESSES; i++) {
+        struct WorkPortion a;
+        a.start = *portions[i];
+        a.end = portions[i][1];
+        write(fd[1], &a, sizeof(struct WorkPortion));
+    }
+}
+
+void printParentMessage() {
+    printf("I am the father of the following: "); 
+    for (int i = 0; i < MAX_CHILD_PROCESSES; i++) {
+        if(i == MAX_CHILD_PROCESSES - 1) {
+            printf("and %d", childPids[i]);
+        } else printf("%d, ", childPids[i]);
+            
+    }
+    printf("\n");
 }
 
 void createChildProcesses(int *pid, int *childCount) {
