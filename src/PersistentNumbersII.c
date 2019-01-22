@@ -148,7 +148,7 @@ struct WorkPortion getWorkPortion() {
 
 void doChildWork(struct WorkPortion wp) {
     int temp[WORK_PORTION_PER_CHILD];
-    for(int i=wp.start, j=0;i<WORK_PORTION_PER_CHILD; i++,j++) {
+    for(int i=wp.start, j=0;j<WORK_PORTION_PER_CHILD; i++,j++) {
         temp[j] = numbers[i];
     }
 
