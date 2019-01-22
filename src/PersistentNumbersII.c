@@ -24,6 +24,7 @@
 
 #define SIZE_OF_ARRAY 125
 #define MAX_CHILD_PROCESSES 5
+#define WORK_PORTION_PER_CHILD 25
 
 struct WorkPortion {
     int start;
@@ -42,9 +43,10 @@ struct WorkPortion getWorkPortion(); //randomly selects a range of lines to proc
 //List of child pids the parent keeps as a queue
 int childPids[MAX_CHILD_PROCESSES];
 int FLAG_CONT = 0; //flag to notify weather or not to keep sending kills
+int numbers[SIZE_OF_ARRAY];   //array to hold the list of numbers
+
 
 int main(int argc, char *argv[]) {  
-    int numbers[SIZE_OF_ARRAY];   //array to hold the list of numbers
     int childProcesses[MAX_CHILD_PROCESSES]; //array to hold child id 
     int childCount = 0;
     int pid;    
@@ -61,7 +63,7 @@ int main(int argc, char *argv[]) {
     }
     
     sort(numbers, 0, 9);
-    getPersistent(numbers);    
+//    getPersistent(numbers);    
 
     clock_t endTime = clock();
     executionTime += (double)(endTime - startTime) / CLOCKS_PER_SEC;
@@ -128,6 +130,7 @@ int main(int argc, char *argv[]) {
         //struct WorkPortion wp = getWorkPortion();
         printf("pid: %d starting at: %d\n", getpid(), wp.start);
         printf("pid: %d ending at: %d\n", getpid(), wp.end);
+        doChildWork(wp);
         exit(1);
     }
 }
@@ -144,9 +147,13 @@ struct WorkPortion getWorkPortion() {
     return workPortion;
 }
 
-void doChildWork() {
-    //TODO
+void doChildWork(struct WorkPortion wp) {
+    int temp[WORK_PORTION_PER_CHILD];
+    for(int i=wp.start, j=0;i<WORK_PORTION_PER_CHILD; i++,j++) {
+        temp[j] = numbers[i];
+    }
 
+    getPersistent(temp);    
 }
 
 int spawnChild(int *childCount) {
@@ -204,7 +211,7 @@ void getPersistent(int *array){
     int minPersistent = INT_MAX;
     
     //loops through list and finds the max and min persistent numbers
-    for (int i=0; i<SIZE_OF_ARRAY; i++) {
+    for (int i=0; i<WORK_PORTION_PER_CHILD; i++) {
         int p = calculatePersistent(array[i]);
         if (p >= maxPersistent) { 
             maxPersistentNumber = array[i];
