@@ -45,6 +45,7 @@ void createPipe(); //creates the pipe needed to communicate with the child proce
 void createChildProcesses(int *pid, int *childCount); //creates multiple child processes
 void printParentMessage();
 void assignWorkPortion(); //write a portion of work to the pipe
+void unpauseChildProcesses();
 
 int childPids[MAX_CHILD_PROCESSES]; //List of child pids the parent keeps as a queue
 int FLAG_CONT = 0; //flag to notify weather or not to keep sending kills to unpause child
@@ -73,11 +74,8 @@ int main(int argc, char *argv[]) {
 
         printParentMessage();
         assignWorkPortion();
-
-        //Un-pauses the child precesses      
-        for(int i = 0;i < 5; i++) {
-            kill(childPids[i], SIGUSR1);
-        }
+        unpauseChildProcesses();
+       
 
         int child_pid;
         int status;
@@ -112,6 +110,13 @@ int main(int argc, char *argv[]) {
         doChildWork(wp);
         
         exit(1);
+    }
+}
+
+void unpauseChildProcesses() {
+    //Un-pauses the child precesses      
+    for(int i = 0;i < 5; i++) {
+        kill(childPids[i], SIGUSR1);
     }
 }
 
