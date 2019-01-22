@@ -46,6 +46,7 @@ void createChildProcesses(int *pid, int *childCount); //creates multiple child p
 void printParentMessage();
 void assignWorkPortion(); //write a portion of work to the pipe
 void unpauseChildProcesses();
+void waitForChildProcesses();
 
 int childPids[MAX_CHILD_PROCESSES]; //List of child pids the parent keeps as a queue
 int FLAG_CONT = 0; //flag to notify weather or not to keep sending kills to unpause child
@@ -75,23 +76,12 @@ int main(int argc, char *argv[]) {
         printParentMessage();
         assignWorkPortion();
         unpauseChildProcesses();
-       
-
-        int child_pid;
-        int status;
-        int n = MAX_CHILD_PROCESSES;
-        //waits for the children to finish
-        while(n > 0) {
-            child_pid = wait(&status);
-            printf("From main: Child %d finished with status %d\n", child_pid, status);
-            --n;
-        }
+        waitForChildProcesses();      
 
         clock_t endTime = clock();
         executionTime += (double)(endTime - startTime) / CLOCKS_PER_SEC;
 
         printf("Execution time: %f seconds\n", executionTime);
-
     }
 
     //do child stuff
@@ -104,12 +94,22 @@ int main(int argc, char *argv[]) {
         close(fd[1]); //close write side of pipe
         
         struct WorkPortion wp;
-        read(fd[0], &wp, sizeof(struct WorkPortion));
-        //printf("pid: %d starting at: %d\n", getpid(), wp.start);
-        //printf("pid: %d ending at: %d\n", getpid(), wp.end);
+        read(fd[0], &wp, sizeof(struct WorkPortion)); //read start/end position
         doChildWork(wp);
         
         exit(1);
+    }
+}
+
+void waitForChildProcesses() {
+    int child_pid;
+    int status;
+    int n = MAX_CHILD_PROCESSES;
+    //waits for the children to finish
+    while(n > 0) {
+        child_pid = wait(&status);
+        printf("From main: Child %d finished with status %d\n", child_pid, status);
+        --n;
     }
 }
 
