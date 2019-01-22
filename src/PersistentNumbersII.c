@@ -47,7 +47,6 @@ int numbers[SIZE_OF_ARRAY]; //array to hold the list of numbers
 int fd[2]; //pipe file descriptors
 
 int main(int argc, char *argv[]) {  
-    int childProcesses[MAX_CHILD_PROCESSES]; //array to hold child id 
     int childCount = 0;
     int pid;    
 
@@ -63,14 +62,11 @@ int main(int argc, char *argv[]) {
     }
     
     sort(numbers, 0, 9);
-
-    //create pipe
     createPipe();
 
     //created child processes
     for (int i = 0; i < MAX_CHILD_PROCESSES; i++) {
         if((pid = spawnChild(&childCount)) != 0) {
-            childProcesses[i] = pid;
             childPids[i] = pid;
         } else break;
     }
@@ -82,8 +78,8 @@ int main(int argc, char *argv[]) {
         printf("I am the father of the following: "); 
         for (int i = 0; i < MAX_CHILD_PROCESSES; i++) {
             if(i == MAX_CHILD_PROCESSES - 1) {
-                printf("and %d", childProcesses[i]);
-            } else printf("%d, ", childProcesses[i]);
+                printf("and %d", childPids[i]);
+            } else printf("%d, ", childPids[i]);
             
             struct WorkPortion a;
             a.start = *portions[i];
