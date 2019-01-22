@@ -134,18 +134,6 @@ int main(int argc, char *argv[]) {
     }
 }
 
-struct WorkPortion getWorkPortion() {
-    int portions[5][2] = {{0,24},{25,49},{50,74},{75,99},{100,124}}; //1/5th of file being processes. i.e MAX_ARRAY_SIZE
-    struct WorkPortion workPortion;
-
-    //srand(time(NULL) ^ (getpid()<<16)); //gens a random number by XOR the time with the processes pid shifted left 16 bits
-    int startPortion = rand()%5;
-
-    workPortion.start = portions[startPortion][0];
-    workPortion.end = portions[startPortion][1];
-    return workPortion;
-}
-
 void doChildWork(struct WorkPortion wp) {
     int temp[WORK_PORTION_PER_CHILD];
     for(int i=wp.start, j=0;j<WORK_PORTION_PER_CHILD; i++,j++) {
