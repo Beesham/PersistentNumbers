@@ -145,7 +145,7 @@ void printParentMessage() {
 
 void createChildProcesses(int *pid, int *childCount) {
     for (int i = 0; i < MAX_CHILD_PROCESSES; i++) {
-        if((*pid = spawnChild(&childCount)) != 0) {
+        if((*pid = spawnChild(childCount)) != 0) {
             childPids[i] = *pid;
         } else break;
     }
@@ -173,7 +173,7 @@ int spawnChild(int *childCount) {
     int pid;
     if ((pid = fork()) != 0) {
         (*childCount)++;
-         return pid;
+        return pid;
     }
     return 0;
 }
