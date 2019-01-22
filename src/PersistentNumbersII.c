@@ -49,6 +49,9 @@ int main(int argc, char *argv[]) {
     int childCount = 0;
     int pid;    
 
+    srand(time(NULL)); 
+    
+    int portions[5][2] = {{0,24},{25,49},{50,74},{75,99},{100,124}}; //1/5th of file being processes. i.e MAX_ARRAY_SIZE
     double executionTime = 0;
     clock_t startTime = clock();
     
@@ -65,6 +68,14 @@ int main(int argc, char *argv[]) {
 
     printf("Execution time: %f seconds\n", executionTime);
 
+    int fd[2];
+    //create pipe
+    if(pipe(fd) == -1) {
+        printf("Error: Failed to create pipe");
+        exit(1);
+    }
+
+    //created child processes
     for (int i = 0; i < MAX_CHILD_PROCESSES; i++) {
         if((pid = spawnChild(&childCount)) != 0) {
             childProcesses[i] = pid;
@@ -74,11 +85,18 @@ int main(int argc, char *argv[]) {
     
     //do parent stuff
     if (pid > 0) {    
+        close(fd[0]);
+        
         printf("I am the father of the following: "); 
         for (int i = 0; i < MAX_CHILD_PROCESSES; i++) {
             if(i == MAX_CHILD_PROCESSES - 1) {
                 printf("and %d", childProcesses[i]);
             } else printf("%d, ", childProcesses[i]);
+            
+            struct WorkPortion a;
+            a.start = *portions[i];
+            a.end = portions[i][1];
+            write(fd[1], &a, sizeof(struct WorkPortion));
         }
         printf("\n");
 
@@ -104,7 +122,10 @@ int main(int argc, char *argv[]) {
         signal(SIGUSR1, signalHandlerChild);
         pause();
         printf("I am kid #: %d with pid: %d\n", childCount, getpid());
-        struct WorkPortion wp = getWorkPortion();
+        close(fd[1]); //close write side of pipe
+        struct WorkPortion wp;
+        read(fd[0], &wp, sizeof(struct WorkPortion));
+        //struct WorkPortion wp = getWorkPortion();
         printf("pid: %d starting at: %d\n", getpid(), wp.start);
         printf("pid: %d ending at: %d\n", getpid(), wp.end);
         exit(1);
@@ -115,9 +136,8 @@ struct WorkPortion getWorkPortion() {
     int portions[5][2] = {{0,24},{25,49},{50,74},{75,99},{100,124}}; //1/5th of file being processes. i.e MAX_ARRAY_SIZE
     struct WorkPortion workPortion;
 
-    srand(time(NULL) ^ (getpid()<<16)); //gens a random number by XOR the time with the processes pid shifted left 16 bits
+    //srand(time(NULL) ^ (getpid()<<16)); //gens a random number by XOR the time with the processes pid shifted left 16 bits
     int startPortion = rand()%5;
-    printf("startPosition: %d", startPortion);
 
     workPortion.start = portions[startPortion][0];
     workPortion.end = portions[startPortion][1];
