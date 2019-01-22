@@ -4,10 +4,12 @@
 * Class: Operating Systems Fundamentals (COMP3300)
 * Title: PersistentNumbersII.c (Homework #1) 
 * Description: This program takes a file with a list of numbers
-* that. The persistency of each number will be calculated and the max and min persitent will 
+* The persistency of each number will be calculated and the max and min persitent will 
 * be printed. The program will also calulate the execution time. 
-* This version takes advantage of multithreding via multiple processes (fork) 
-* Assumptions: a number is 9 digits long and is line separated
+* This version separates the work via multiple processes (fork) 
+* Assumptions: 
+* - a number is 9 digits long and is line separated
+* - the amount of lines in the file is known
 */
 
 
@@ -26,6 +28,7 @@
 #define MAX_CHILD_PROCESSES 5
 #define WORK_PORTION_PER_CHILD 25
 
+// holds the start and end positions for portion of work to be completed
 struct WorkPortion {
     int start;
     int end;    
@@ -39,41 +42,35 @@ int spawnChild(); //spawns a child process
 void signalHandlerChild(int signo); //Signal Handler for child processes
 void doChildWork(); //child process calculates persistence of numbers
 void createPipe(); //creates the pipe needed to communicate with the child processes
+void createChildProcesses(int *pid, int *childCount); //creates multiple child processes
 
-//List of child pids the parent keeps as a queue
-int childPids[MAX_CHILD_PROCESSES];
-int FLAG_CONT = 0; //flag to notify weather or not to keep sending kills
+int childPids[MAX_CHILD_PROCESSES]; //List of child pids the parent keeps as a queue
+int FLAG_CONT = 0; //flag to notify weather or not to keep sending kills to unpause child
 int numbers[SIZE_OF_ARRAY]; //array to hold the list of numbers
 int fd[2]; //pipe file descriptors
 
 int main(int argc, char *argv[]) {  
     int childCount = 0;
     int pid;    
-
-    srand(time(NULL)); 
-    
     int portions[5][2] = {{0,24},{25,49},{50,74},{75,99},{100,124}}; //1/5th of file being processes. i.e MAX_ARRAY_SIZE
     double executionTime = 0;
     clock_t startTime = clock();
     
+    //checks for correct arg count and reads the supplied file if exists
     if (!argumentCheck(argc) || !readFile(numbers, argv)) {
-        clock();        
+        clock(); // stops the clock if error
         exit(0);
     }
     
-    sort(numbers, 0, 9);
+    sort(numbers, 0, SIZE_OF_ARRAY - 1);
     createPipe();
 
     //created child processes
-    for (int i = 0; i < MAX_CHILD_PROCESSES; i++) {
-        if((pid = spawnChild(&childCount)) != 0) {
-            childPids[i] = pid;
-        } else break;
-    }
-    
+    createChildProcesses(&pid, &childCount);
+
     //do parent stuff
     if (pid > 0) {    
-        close(fd[0]);
+        close(fd[0]); //close read 
         
         printf("I am the father of the following: "); 
         for (int i = 0; i < MAX_CHILD_PROCESSES; i++) {
@@ -81,6 +78,8 @@ int main(int argc, char *argv[]) {
                 printf("and %d", childPids[i]);
             } else printf("%d, ", childPids[i]);
             
+            //write a portion of work to the pipe to be read by a process
+            //whichever process reads it first
             struct WorkPortion a;
             a.start = *portions[i];
             a.end = portions[i][1];
@@ -99,7 +98,7 @@ int main(int argc, char *argv[]) {
         //waits for the children to finish
         while(n > 0) {
             child_pid = wait(&status);
-            printf("Child %d finished with status %d\n", child_pid, status);
+            printf("From main: Child %d finished with status %d\n", child_pid, status);
             --n;
         }
 
@@ -114,15 +113,26 @@ int main(int argc, char *argv[]) {
     if (pid == 0) {
         signal(SIGUSR1, signalHandlerChild);
         pause();
+        
         printf("I am kid #: %d with pid: %d\n", childCount, getpid());
+        
         close(fd[1]); //close write side of pipe
+        
         struct WorkPortion wp;
         read(fd[0], &wp, sizeof(struct WorkPortion));
-        //struct WorkPortion wp = getWorkPortion();
-        printf("pid: %d starting at: %d\n", getpid(), wp.start);
-        printf("pid: %d ending at: %d\n", getpid(), wp.end);
+        //printf("pid: %d starting at: %d\n", getpid(), wp.start);
+        //printf("pid: %d ending at: %d\n", getpid(), wp.end);
         doChildWork(wp);
+        
         exit(1);
+    }
+}
+
+void createChildProcesses(int *pid, int *childCount) {
+    for (int i = 0; i < MAX_CHILD_PROCESSES; i++) {
+        if((*pid = spawnChild(&childCount)) != 0) {
+            childPids[i] = *pid;
+        } else break;
     }
 }
 
@@ -135,6 +145,8 @@ void createPipe() {
 
 void doChildWork(struct WorkPortion wp) {
     int temp[WORK_PORTION_PER_CHILD];
+    
+    //creates a temp array holding the portion of the list to compute
     for(int i=wp.start, j=0;j<WORK_PORTION_PER_CHILD; i++,j++) {
         temp[j] = numbers[i];
     }
