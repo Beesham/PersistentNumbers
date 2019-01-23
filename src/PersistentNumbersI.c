@@ -37,13 +37,13 @@ int main(int argc, char *argv[]) {
         exit(0);
     }
     
-    sort(numbers, 0, 9);
+    sort(numbers, 0, SIZE_OF_ARRAY - 1);
     getPersistent(numbers);    
 
     clock_t endTime = clock();
     executionTime += (double)(endTime - startTime) / CLOCKS_PER_SEC;
 
-    printf("Execution time: %f seconds", executionTime);
+    printf("Execution time: %f seconds\n", executionTime);
 
     return 0;
 }
