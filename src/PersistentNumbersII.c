@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
         clock_t endTime = clock();
         executionTime += (double)(endTime - startTime) / CLOCKS_PER_SEC;
 
-        printf("Execution time: %f seconds\n", executionTime);
+        printf("Execution time: %f seconds\nGood Bye!\n", executionTime);
     }
 
     //do child stuff
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
         signal(SIGUSR1, signalHandlerChild);
         pause();
         
-        printf("I am kid #: %d with pid: %d\n", childCount, getpid());
+        printf("I am kid #: %d and my id is: %d\n", childCount, getpid());
         
         close(fd[1]); //close write side of pipe
         
@@ -108,7 +108,7 @@ void waitForChildProcesses() {
     //waits for the children to finish
     while(n > 0) {
         child_pid = wait(&status);
-        printf("From main: Child %d finished with status %d\n", child_pid, status);
+        printf("From main: child, id = %d ended with status %d\n", child_pid, status);
         --n;
     }
 }
