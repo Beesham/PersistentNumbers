@@ -237,8 +237,8 @@ void getPersistent(int *array){
         }
     }
 
-    printf("Max Persitence number: %d with %d persistence\n", maxPersistentNumber, maxPersistent);
-    printf("Min Persitence number: %d with %d persistence\n", minPersistentNumber, minPersistent);
+    printf("Max Persitence number: %d with %d persistence from pid: %d\n", maxPersistentNumber, maxPersistent, getpid());
+    printf("Min Persitence number: %d with %d persistence from pid: %d\n", minPersistentNumber, minPersistent, getpid());
 }
 
 void swap(int *array, int indexK, int indexJ) {
